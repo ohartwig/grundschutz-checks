@@ -6,7 +6,7 @@
 // treatment) and part of DET.5.10 (timely patch management): for the code and
 // images of the projects, not for the systems they run on.
 
-import { enc, projects } from "../lib/gitlab.mjs";
+import { enc, hasCi, projects } from "../lib/gitlab.mjs";
 import { describe } from "./branch-protection.mjs";
 
 const DAY = 864e5;
@@ -30,14 +30,18 @@ export default {
     const noCi = [];
     for (const path of await projects(gitlab, config.gitlab)) {
       const p = await gitlab.get(`/projects/${enc(path)}`);
-      // No CI, no pipeline to scan in: named in the evidence, not judged.
+      // CI switched off: a project of settings or documents, nothing to scan
+      // in -- named in the evidence, not judged. CI on but not configured:
+      // code that nothing scans, and that is a finding.
       if (p.builds_access_level === "disabled") {
         noCi.push(path);
         continue;
       }
       const problems = [];
-      const [pl] = await gitlab.get(`/projects/${enc(path)}/pipelines?ref=${enc(p.default_branch ?? "main")}&per_page=1`);
-      if (!pl) problems.push("no pipeline on the default branch");
+      const ci = await hasCi(gitlab, path, p);
+      const [pl] = ci ? await gitlab.get(`/projects/${enc(path)}/pipelines?ref=${enc(p.default_branch ?? "main")}&per_page=1`) : [];
+      if (!ci) problems.push("no CI configuration: nothing is scanned");
+      else if (!pl) problems.push("no pipeline on the default branch");
       else {
         const jobs = await gitlab.all(`/projects/${enc(path)}/pipelines/${pl.id}/jobs?include_retried=false`);
         const scans = jobs.filter((j) => scan.test(j.name));

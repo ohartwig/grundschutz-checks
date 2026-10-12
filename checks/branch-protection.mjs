@@ -5,7 +5,7 @@
 // on the default branch, not on every branch) and part of TEST.4.1 (changes
 // are authorised: the gate is enforced, the criteria behind it are not seen).
 
-import { enc, projects } from "../lib/gitlab.mjs";
+import { enc, hasCi, projects } from "../lib/gitlab.mjs";
 
 const MAINTAINER = 40;
 
@@ -36,16 +36,16 @@ export default {
         const push = (pb.push_access_levels ?? []).filter((a) => a.access_level !== 0 && a.access_level < MAINTAINER && !a.deploy_key_id);
         if (push.length) problems.push(`push allowed for ${push.map((a) => a.access_level_description).join(", ")}`);
       }
-      // Without CI there is no pipeline to wait for; the protection stands alone.
-      const ci = p.builds_access_level !== "disabled";
-      if (ci && !p.only_allow_merge_if_pipeline_succeeds) problems.push("merges do not need a successful pipeline");
+      // Without CI nothing tests a change before it merges; switching on the
+      // pipeline gate there would block every merge, so the finding is the
+      // missing CI, not the setting.
+      if (!(await hasCi(gitlab, path, p))) problems.push("no CI: changes merge without any pipeline");
+      else if (!p.only_allow_merge_if_pipeline_succeeds) problems.push("merges do not need a successful pipeline");
       out.push({
         title: path,
         href,
         satisfied: !problems.length,
-        detail: problems.length
-          ? problems.join("; ")
-          : `${p.default_branch} protected, no force push, ${ci ? "merge after a green pipeline" : "no CI (no pipeline to wait for)"}`,
+        detail: problems.length ? problems.join("; ") : `${p.default_branch} protected, no force push, merge after a green pipeline`,
       });
     }
     return out;
