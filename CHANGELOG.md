@@ -1,3 +1,13 @@
+## [0.2.3](https://github.com/ohartwig/grundschutz-checks/compare/v0.2.2...v0.2.3) (2026-10-12)
+
+### :repeat: Continuous Integrations
+
+* **mirror:** rewrite commit and tag messages for GitHub too
+
+### :repeat: Chores
+
+* **deps:** update ohartwig/grundschutz-worksheets digest to 0e59921
+
 ## [0.2.2](https://github.com/ohartwig/grundschutz-checks/compare/v0.2.1...v0.2.2) (2026-10-12)
 
 ### :repeat: Chores
