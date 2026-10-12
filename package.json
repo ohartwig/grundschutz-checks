@@ -1,0 +1,11 @@
+{
+  "name": "grundschutz-checks",
+  "private": true,
+  "type": "module",
+  "description": "Checks that measure Grundschutz++ requirements and write run files for grundschutz-worksheets",
+  "license": "MIT",
+  "engines": { "node": ">=24" },
+  "scripts": {
+    "test": "node --test \"test/*.test.mjs\""
+  }
+}
