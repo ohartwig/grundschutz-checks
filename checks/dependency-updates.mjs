@@ -1,5 +1,6 @@
-// Dependencies are watched and updates do not wait: the latest pipeline on
-// the default branch ran a dependency or image scan job and passed it, and no
+// Dependencies are watched and updates do not wait: the latest finished
+// pipeline on the default branch ran a dependency or image scan job and
+// passed it (a manual or skipped helper job is not a scan that ran), and no
 // merge request of the update bot has been open longer than allowed.
 //
 // Evidences part of DET.5.3 (vulnerability scans with evaluation and
@@ -39,14 +40,16 @@ export default {
       }
       const problems = [];
       const ci = await hasCi(gitlab, path, p);
-      const [pl] = ci ? await gitlab.get(`/projects/${enc(path)}/pipelines?ref=${enc(p.default_branch ?? "main")}&per_page=1`) : [];
+      // A pipeline still running has scans not yet run: the latest finished one.
+      const [pl] = ci ? await gitlab.get(`/projects/${enc(path)}/pipelines?ref=${enc(p.default_branch ?? "main")}&scope=finished&per_page=1`) : [];
       if (!ci) problems.push("no CI configuration: nothing is scanned");
-      else if (!pl) problems.push("no pipeline on the default branch");
+      else if (!pl) problems.push("no finished pipeline on the default branch");
       else {
         const jobs = await gitlab.all(`/projects/${enc(path)}/pipelines/${pl.id}/jobs?include_retried=false`);
-        const scans = jobs.filter((j) => scan.test(j.name));
-        if (!scans.length) problems.push(`pipeline ${pl.id} has no scan job`);
-        else if (scans.some((j) => j.status !== "success")) problems.push(`scan ${scans.filter((j) => j.status !== "success").map((j) => `${j.name} ${j.status}`).join(", ")}`);
+        const scans = jobs.filter((j) => scan.test(j.name) && !["manual", "skipped", "created"].includes(j.status));
+        const bad = scans.filter((j) => j.status !== "success");
+        if (!scans.length) problems.push(`pipeline ${pl.id} ran no scan job`);
+        else if (bad.length) problems.push(`scan ${bad.map((j) => `${j.name} ${j.status}`).join(", ")} in pipeline ${pl.id}`);
       }
       const open = await gitlab.all(`/projects/${enc(path)}/merge_requests?state=opened`);
       const stale = open.filter((m) => bots.has(m.author?.username) && (now.getTime() - Date.parse(m.created_at)) / DAY > maxDays);

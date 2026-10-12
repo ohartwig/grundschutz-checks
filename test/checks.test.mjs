@@ -39,10 +39,10 @@ const api = {
     { tag_name: "v0.3.0", _links: { self: `${GL}/acme/loose/-/releases/v0.3.0` }, assets: { links: [{ name: "binary.tar.gz", url: "https://x/b" }] } },
   ],
   [`/projects/${p("acme/open")}/releases?order_by=released_at&sort=desc`]: [],
-  [`/projects/${p("acme/good")}/pipelines?ref=main`]: [{ id: 11 }],
-  [`/projects/${p("acme/loose")}/pipelines?ref=main`]: [{ id: 12 }],
-  [`/projects/${p("acme/open")}/pipelines?ref=trunk`]: [],
-  [`/projects/${p("acme/good")}/pipelines/11/jobs?include_retried=false`]: [{ name: "test", status: "success" }, { name: "trivy-scan", status: "success" }],
+  [`/projects/${p("acme/good")}/pipelines?ref=main&scope=finished`]: [{ id: 11 }],
+  [`/projects/${p("acme/loose")}/pipelines?ref=main&scope=finished`]: [{ id: 12 }],
+  [`/projects/${p("acme/open")}/pipelines?ref=trunk&scope=finished`]: [],
+  [`/projects/${p("acme/good")}/pipelines/11/jobs?include_retried=false`]: [{ name: "test", status: "success" }, { name: "trivy-scan", status: "success" }, { name: "container_scanning:write-baseline", status: "manual" }],
   [`/projects/${p("acme/loose")}/pipelines/12/jobs?include_retried=false`]: [{ name: "test", status: "success" }],
   [`/projects/${p("acme/good")}/merge_requests?state=opened`]: [{ iid: 3, author: { username: "pinup-bot" }, created_at: "2026-10-10T00:00:00Z" }],
   [`/projects/${p("acme/loose")}/merge_requests?state=opened`]: [
@@ -54,7 +54,14 @@ const api = {
   [`/projects/${p("acme/loose")}/pipelines?ref=v0.3.0`]: [{ id: 30 }],
   [`/projects/${p("acme/loose")}/pipelines/30/jobs?include_retried=false`]: [{ name: "sbom:publish", status: "success", artifacts: [{ file_type: "archive" }] }],
   [`/projects/${p("acme/bare")}`]: { web_url: `${GL}/acme/bare`, default_branch: "main", only_allow_merge_if_pipeline_succeeds: true },
-  [`/projects/${p("acme/bare")}/releases?order_by=released_at&sort=desc`]: [{ tag_name: "v2.0.0", _links: { self: `${GL}/acme/bare/-/releases/v2.0.0` }, assets: { links: [] } }],
+  [`/projects/${p("acme/bare")}/releases?order_by=released_at&sort=desc`]: [{ tag_name: "v2.0.0", commit: { id: "b".repeat(40) }, _links: { self: `${GL}/acme/bare/-/releases/v2.0.0` }, assets: { links: [] } }],
+  [`/projects/${p("acme/bare")}/pipelines?sha=${"b".repeat(40)}`]: [{ id: 40 }, { id: 41 }],
+  [`/projects/${p("acme/bare")}/pipelines/41/jobs?include_retried=false`]: [{ name: "test", status: "success", artifacts: [] }],
+  // A release tool that tags with the job token: no tag pipeline, the SBOM is built on the commit.
+  [`/projects/${p("acme/tagged")}/releases?order_by=released_at&sort=desc`]: [{ tag_name: "v3.1.0", commit: { id: "a".repeat(40) }, _links: { self: `${GL}/acme/tagged/-/releases/v3.1.0` }, assets: { links: [] } }],
+  [`/projects/${p("acme/tagged")}/pipelines?ref=v3.1.0`]: [],
+  [`/projects/${p("acme/tagged")}/pipelines?sha=${"a".repeat(40)}`]: [{ id: 50 }],
+  [`/projects/${p("acme/tagged")}/pipelines/50/jobs?include_retried=false`]: [{ name: "sbom:publish", status: "success", artifacts: [{ file_type: "archive" }, { file_type: "dependency_scanning" }] }],
   [`/projects/${p("acme/bare")}/pipelines?ref=v2.0.0`]: [{ id: 40 }],
   [`/projects/${p("acme/bare")}/pipelines/40/jobs?include_retried=false`]: [{ name: "build", status: "success", artifacts: [{ file_type: "archive" }] }, { name: "sbom:publish", status: "failed", artifacts: [] }],
   [`/projects/${p("acme/noci")}`]: { web_url: `${GL}/acme/noci`, default_branch: "main", builds_access_level: "disabled", only_allow_merge_if_pipeline_succeeds: false },
@@ -137,14 +144,15 @@ test("tls-endpoints: current TLS, old TLS refused, certificate valid long enough
 });
 
 test("sbom-present: a release asset or an SBOM job of the tag pipeline; a project without release is named, not judged", async () => {
-  const r = await run("sbom-present", (c) => ({ ...c, gitlab: { ...c.gitlab, projects: ["acme/bare"] } }));
+  const r = await run("sbom-present", (c) => ({ ...c, gitlab: { ...c.gitlab, projects: ["acme/bare", "acme/tagged"] } }));
   assert.equal(r.code, 0, r.err);
   const s = by(r);
   assert.match(s["acme/good v1.2.0"].detail, /^SBOM: release asset sbom\.cdx\.json$/);
   assert.match(s["acme/loose v0.3.0"].detail, /^SBOM: job sbom:publish of pipeline 30$/);
   assert.equal(s["acme/bare v2.0.0"].satisfied, false);
-  assert.match(s["acme/bare v2.0.0"].detail, /no SBOM among 0 release asset\(s\), nor in pipeline 40/);
-  assert.equal(Object.keys(s).length, 3);
+  assert.equal(s["acme/bare v2.0.0"].detail, "no SBOM among 0 release asset(s), nor in pipeline 40, 41 of the tag or its commit");
+  assert.equal(s["acme/tagged v3.1.0"].detail, "SBOM: job sbom:publish of pipeline 50");
+  assert.equal(Object.keys(s).length, 4);
   assert.deepEqual(r.run.evidence.at(-1), { text: "no release, left out: acme/open" });
   assert.deepEqual(r.run.partial, ["ASST.2.3.2"]);
 });
@@ -169,8 +177,8 @@ test("dependency-updates: a passed scan job, no update of the bot waiting too lo
   assert.equal(r.code, 0, r.err);
   const s = by(r);
   assert.equal(s["acme/good"].satisfied, true);
-  assert.match(s["acme/loose"].detail, /has no scan job; 1 update\(s\) open more than 14 days: !7$/);
-  assert.match(s["acme/open"].detail, /no pipeline on the default branch/);
+  assert.match(s["acme/loose"].detail, /ran no scan job; 1 update\(s\) open more than 14 days: !7$/);
+  assert.match(s["acme/open"].detail, /no finished pipeline on the default branch/);
 });
 
 test("the run file carries what results.mjs needs: plan, catalog, who measured, when", async () => {
