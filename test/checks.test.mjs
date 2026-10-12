@@ -24,6 +24,12 @@ const api = {
   [`/projects/${p("acme/good")}`]: { web_url: `${GL}/acme/good`, default_branch: "main", only_allow_merge_if_pipeline_succeeds: true },
   [`/projects/${p("acme/loose")}`]: { web_url: `${GL}/acme/loose`, default_branch: "main", only_allow_merge_if_pipeline_succeeds: false },
   [`/projects/${p("acme/open")}`]: { web_url: `${GL}/acme/open`, default_branch: "trunk", only_allow_merge_if_pipeline_succeeds: true },
+  [`/projects/${p("acme/good")}/repository/files/.gitlab-ci.yml?ref=main`]: { file_name: ".gitlab-ci.yml" },
+  [`/projects/${p("acme/loose")}/repository/files/.gitlab-ci.yml?ref=main`]: { file_name: ".gitlab-ci.yml" },
+  [`/projects/${p("acme/open")}/repository/files/.gitlab-ci.yml?ref=trunk`]: { file_name: ".gitlab-ci.yml" },
+  [`/projects/${p("acme/plain")}`]: { web_url: `${GL}/acme/plain`, default_branch: "main", only_allow_merge_if_pipeline_succeeds: false },
+  [`/projects/${p("acme/plain")}/protected_branches/main`]: { allow_force_push: false, push_access_levels: [{ access_level: 40, access_level_description: "Maintainers" }] },
+  [`/projects/${p("acme/plain")}/merge_requests?state=opened`]: [],
   [`/projects/${p("acme/good")}/protected_branches/main`]: { allow_force_push: false, push_access_levels: [{ access_level: 40, access_level_description: "Maintainers" }] },
   [`/projects/${p("acme/loose")}/protected_branches/main`]: { allow_force_push: true, push_access_levels: [{ access_level: 30, access_level_description: "Developers + Maintainers" }] },
   [`/projects/${p("acme/good")}/releases?order_by=released_at&sort=desc`]: [
@@ -143,14 +149,18 @@ test("sbom-present: a release asset or an SBOM job of the tag pipeline; a projec
   assert.deepEqual(r.run.partial, ["ASST.2.3.2"]);
 });
 
-test("without CI: no pipeline gate to ask for, nothing to scan", async () => {
-  const bp = await run("branch-protection", (c) => ({ ...c, gitlab: { url: GL, projects: ["acme/noci"] } }));
+test("without CI: the finding is the missing CI, not the pipeline setting", async () => {
+  const bp = await run("branch-protection", (c) => ({ ...c, gitlab: { url: GL, projects: ["acme/noci", "acme/plain"] } }));
   assert.equal(bp.code, 0, bp.err);
-  assert.equal(bp.run.subjects[0].satisfied, true);
-  assert.match(bp.run.subjects[0].detail, /no CI/);
-  const du = await run("dependency-updates", (c) => ({ ...c, gitlab: { url: GL, projects: ["acme/noci", "acme/good"] } }));
+  for (const s of bp.run.subjects) {
+    assert.equal(s.satisfied, false);
+    assert.equal(s.detail, "no CI: changes merge without any pipeline");
+  }
+  // CI switched off: nothing to scan, named; CI on but no configuration: a finding.
+  const du = await run("dependency-updates", (c) => ({ ...c, gitlab: { url: GL, projects: ["acme/noci", "acme/plain", "acme/good"] } }));
   assert.equal(du.code, 0, du.err);
-  assert.deepEqual(du.run.subjects.map((s) => s.title), ["acme/good"]);
+  assert.deepEqual(du.run.subjects.map((s) => s.title), ["acme/good", "acme/plain"]);
+  assert.equal(by(du)["acme/plain"].detail, "no CI configuration: nothing is scanned");
   assert.deepEqual(du.run.evidence.at(-1), { text: "CI disabled, left out: acme/noci" });
 });
 
