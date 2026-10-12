@@ -1,3 +1,9 @@
+## [0.2.2](https://github.com/ohartwig/grundschutz-checks/compare/v0.2.1...v0.2.2) (2026-10-12)
+
+### :repeat: Chores
+
+* **estate:** accept five forks that build only inside other projects
+
 ## [0.2.1](https://github.com/ohartwig/grundschutz-checks/compare/v0.2.0...v0.2.1) (2026-10-12)
 
 ### :repeat: Chores
