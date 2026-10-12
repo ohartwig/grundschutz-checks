@@ -56,6 +56,11 @@ from the config. `GITLAB_TOKEN` needs `read_api` and nothing more.
 - `checks`: which checks run; `every`: how often, for the plan.
 - `gitlab`: the instance, and the groups and projects to look at.
 - `tls`, `mfa-enforced`, `dependency-updates`: the limits of those checks.
+- `accept`, per check: deliberate exceptions, project and reason. An accepted
+  project is not looked at, and every run names it with its reason in the
+  evidence -- an exception stays visible instead of disappearing.
+- `sbom-present.sbom-jobs`: names of further jobs that produce an SBOM, such
+  as a supply-chain job that attests one to a pushed artefact.
 
 A run in CI names itself: `measured_by` carries the project, the commit and
 the job, and the job is the first piece of evidence. Outside CI it says

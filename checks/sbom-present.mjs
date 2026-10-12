@@ -15,6 +15,11 @@ import { enc, projects } from "../lib/gitlab.mjs";
 import { describe } from "./branch-protection.mjs";
 
 const SBOM = /sbom|cyclonedx|spdx/i;
+// A job that makes an SBOM: by name (sbom:publish), by its CycloneDX report,
+// or by a name the config adds -- a supply-chain job that attests an SBOM to a
+// pushed artefact rather than keeping it as a file (oras-sources, say).
+
+const NAME = "sbom-present";
 
 export default {
   name: "sbom-present",
@@ -29,7 +34,8 @@ export default {
   async run({ config, gitlab, note }) {
     const out = [];
     const without = [];
-    for (const path of await projects(gitlab, config.gitlab)) {
+    const jobs = config[NAME]?.["sbom-jobs"] ? new RegExp(config[NAME]["sbom-jobs"], "i") : null;
+    for (const path of await projects(gitlab, config.gitlab, config[NAME]?.accept, note)) {
       const [rel] = await gitlab.get(`/projects/${enc(path)}/releases?per_page=1&order_by=released_at&sort=desc`);
       if (!rel) {
         without.push(path);
@@ -48,8 +54,12 @@ export default {
         for (const pl of candidates) {
           if (looked.includes(pl.id)) continue;
           looked.push(pl.id);
-          const jobs = await gitlab.all(`/projects/${enc(path)}/pipelines/${pl.id}/jobs?include_retried=false`);
-          job = jobs.find((j) => j.status === "success" && (j.artifacts ?? []).some((a) => a.file_type === "cyclonedx" || (SBOM.test(j.name) && a.file_type === "archive")));
+          const ran = await gitlab.all(`/projects/${enc(path)}/pipelines/${pl.id}/jobs?include_retried=false`);
+          job = ran.find(
+            (j) =>
+              j.status === "success" &&
+              ((j.artifacts ?? []).some((a) => a.file_type === "cyclonedx" || (SBOM.test(j.name) && a.file_type === "archive")) || jobs?.test(j.name)),
+          );
           if (job) {
             pipeline = pl;
             break;

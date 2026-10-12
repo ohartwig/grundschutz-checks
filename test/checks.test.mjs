@@ -64,6 +64,10 @@ const api = {
   [`/projects/${p("acme/tagged")}/pipelines/50/jobs?include_retried=false`]: [{ name: "sbom:publish", status: "success", artifacts: [{ file_type: "archive" }, { file_type: "dependency_scanning" }] }],
   [`/projects/${p("acme/bare")}/pipelines?ref=v2.0.0`]: [{ id: 40 }],
   [`/projects/${p("acme/bare")}/pipelines/40/jobs?include_retried=false`]: [{ name: "build", status: "success", artifacts: [{ file_type: "archive" }] }, { name: "sbom:publish", status: "failed", artifacts: [] }],
+  [`/projects/${p("acme/oras")}/releases?order_by=released_at&sort=desc`]: [{ tag_name: "1.0.0", commit: { id: "c".repeat(40) }, _links: { self: `${GL}/acme/oras/-/releases/1.0.0` }, assets: { links: [] } }],
+  [`/projects/${p("acme/oras")}/pipelines?ref=1.0.0`]: [{ id: 60 }],
+  [`/projects/${p("acme/oras")}/pipelines?sha=${"c".repeat(40)}`]: [{ id: 60 }],
+  [`/projects/${p("acme/oras")}/pipelines/60/jobs?include_retried=false`]: [{ name: "supplychain:oras-sources", status: "success", artifacts: [] }],
   [`/projects/${p("acme/noci")}`]: { web_url: `${GL}/acme/noci`, default_branch: "main", builds_access_level: "disabled", only_allow_merge_if_pipeline_succeeds: false },
   [`/projects/${p("acme/noci")}/protected_branches/main`]: { allow_force_push: false, push_access_levels: [{ access_level: 40, access_level_description: "Maintainers" }] },
 };
@@ -170,6 +174,20 @@ test("without CI: the finding is the missing CI, not the pipeline setting", asyn
   assert.deepEqual(du.run.subjects.map((s) => s.title), ["acme/good", "acme/plain"]);
   assert.equal(by(du)["acme/plain"].detail, "no CI configuration: nothing is scanned");
   assert.deepEqual(du.run.evidence.at(-1), { text: "CI disabled, left out: acme/noci" });
+});
+
+test("an accepted exception is not looked at, and named with its reason", async () => {
+  const r = await run("branch-protection", (c) => ({ ...c, "branch-protection": { accept: { "acme/loose": "a mirror nobody merges into", "acme/elsewhere": "not in these groups" } } }));
+  assert.equal(r.code, 0, r.err);
+  assert.deepEqual(r.run.subjects.map((s) => s.title), ["acme/good", "acme/open"]);
+  assert.deepEqual(r.run.evidence.slice(1), [{ text: "accepted, not looked at: acme/loose -- a mirror nobody merges into" }]);
+});
+
+test("sbom-present: a job the config names as SBOM producer counts", async () => {
+  const before = await run("sbom-present", (c) => ({ ...c, gitlab: { url: GL, projects: ["acme/oras"] } }));
+  assert.equal(before.run.subjects[0].satisfied, false);
+  const r = await run("sbom-present", (c) => ({ ...c, gitlab: { url: GL, projects: ["acme/oras"] }, "sbom-present": { "sbom-jobs": "^supplychain:oras-sources$" } }));
+  assert.equal(r.run.subjects[0].detail, "SBOM: job supplychain:oras-sources of pipeline 60");
 });
 
 test("dependency-updates: a passed scan job, no update of the bot waiting too long", async () => {

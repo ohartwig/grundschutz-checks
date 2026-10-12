@@ -12,6 +12,8 @@ import { describe } from "./branch-protection.mjs";
 
 const DAY = 864e5;
 
+const NAME = "dependency-updates";
+
 export default {
   name: "dependency-updates",
   title: "Dependency scans and timely updates",
@@ -29,7 +31,7 @@ export default {
     const maxDays = c["max-days-open"] ?? 14;
     const out = [];
     const noCi = [];
-    for (const path of await projects(gitlab, config.gitlab)) {
+    for (const path of await projects(gitlab, config.gitlab, config[NAME]?.accept, note)) {
       const p = await gitlab.get(`/projects/${enc(path)}`);
       // CI switched off: a project of settings or documents, nothing to scan
       // in -- named in the evidence, not judged. CI on but not configured:

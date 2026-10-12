@@ -9,6 +9,8 @@ import { enc, hasCi, projects } from "../lib/gitlab.mjs";
 
 const MAINTAINER = 40;
 
+const NAME = "branch-protection";
+
 export default {
   name: "branch-protection",
   title: "Protected default branches",
@@ -19,9 +21,9 @@ export default {
   partial: ["DEV.2.4", "TEST.4.1"],
   subjects: (config) => `Every non-archived project of ${describe(config.gitlab)}.`,
   needs: ["gitlab"],
-  async run({ config, gitlab }) {
+  async run({ config, gitlab, note }) {
     const out = [];
-    for (const path of await projects(gitlab, config.gitlab)) {
+    for (const path of await projects(gitlab, config.gitlab, config[NAME]?.accept, note)) {
       const p = await gitlab.get(`/projects/${enc(path)}`);
       const href = p.web_url;
       if (!p.default_branch) {
