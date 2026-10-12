@@ -14,7 +14,7 @@ import { fileURLToPath } from "node:url";
 export const WORKSHEETS = {
   repository: "https://github.com/ohartwig/grundschutz-worksheets",
   // renovate: datasource=git-refs depName=ohartwig/grundschutz-worksheets packageName=https://github.com/ohartwig/grundschutz-worksheets branch=main
-  commit: "1fde8ff2dc2a8368d1367ca48fd8d8770f65481a",
+  commit: "0e599217529828f6f7f01610f3d4551fc28f13f6",
 };
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) console.log(WORKSHEETS.commit);
