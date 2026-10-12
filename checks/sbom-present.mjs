@@ -1,8 +1,10 @@
 // The latest release of every project has an SBOM: a release asset whose
 // name or address names CycloneDX, SPDX or SBOM, or -- where the SBOM is a
-// build artefact rather than a release asset -- a successful job in the
-// release tag's pipeline that wrote a CycloneDX report or is an SBOM job by
-// name (sbom:publish, say).
+// build artefact rather than a release asset -- a successful job that wrote a
+// CycloneDX report or is an SBOM job by name (sbom:publish, say), in a
+// pipeline of the release tag or of the commit the tag points to. A release
+// tool that pushes its tag with the job token starts no tag pipeline; the
+// SBOM is then built by the pipeline on that commit.
 //
 // Evidences DEV.4.3 (the components documented in an SBOM before the release)
 // for the releases looked at, and part of ASST.2.3.2 (the SBOM documented):
@@ -18,7 +20,7 @@ export default {
   name: "sbom-present",
   title: "SBOM with every release",
   description:
-    "The latest release of every project has an SBOM (CycloneDX or SPDX): as a release asset, or as the artefact of a successful job in the pipeline of its tag. Projects without a release are left out.",
+    "The latest release of every project has an SBOM (CycloneDX or SPDX): as a release asset, or as the artefact of a successful job in a pipeline of its tag or of the commit the tag points to. Projects without a release are left out.",
   method: "EXAMINE",
   requirements: ["DEV.4.3", "ASST.2.3.2"],
   partial: ["ASST.2.3.2"],
@@ -37,11 +39,21 @@ export default {
       const asset = links.find((l) => SBOM.test(l.name ?? "") || SBOM.test(l.url ?? ""));
       let job = null;
       let pipeline = null;
+      const looked = [];
       if (!asset) {
-        [pipeline] = await gitlab.get(`/projects/${enc(path)}/pipelines?ref=${enc(rel.tag_name)}&per_page=1`);
-        if (pipeline) {
-          const jobs = await gitlab.all(`/projects/${enc(path)}/pipelines/${pipeline.id}/jobs?include_retried=false`);
+        const candidates = [
+          ...(await gitlab.get(`/projects/${enc(path)}/pipelines?ref=${enc(rel.tag_name)}&per_page=1`)),
+          ...(rel.commit?.id ? await gitlab.get(`/projects/${enc(path)}/pipelines?sha=${rel.commit.id}&per_page=5`) : []),
+        ];
+        for (const pl of candidates) {
+          if (looked.includes(pl.id)) continue;
+          looked.push(pl.id);
+          const jobs = await gitlab.all(`/projects/${enc(path)}/pipelines/${pl.id}/jobs?include_retried=false`);
           job = jobs.find((j) => j.status === "success" && (j.artifacts ?? []).some((a) => a.file_type === "cyclonedx" || (SBOM.test(j.name) && a.file_type === "archive")));
+          if (job) {
+            pipeline = pl;
+            break;
+          }
         }
       }
       out.push({
@@ -52,7 +64,7 @@ export default {
           ? `SBOM: release asset ${asset.name}`
           : job
             ? `SBOM: job ${job.name} of pipeline ${pipeline.id}`
-            : `no SBOM among ${links.length} release asset(s), ${pipeline ? `nor in pipeline ${pipeline.id} of the tag` : "no pipeline for the tag"}`,
+            : `no SBOM among ${links.length} release asset(s), ${looked.length ? `nor in pipeline ${looked.join(", ")} of the tag or its commit` : "no pipeline for the tag or its commit"}`,
       });
     }
     if (without.length) note(`no release, left out: ${without.join(", ")}`);
