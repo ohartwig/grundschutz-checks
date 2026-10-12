@@ -1,5 +1,8 @@
-// The latest release of every project carries an SBOM: a release asset
-// whose name or address names CycloneDX, SPDX or SBOM.
+// The latest release of every project has an SBOM: a release asset whose
+// name or address names CycloneDX, SPDX or SBOM, or -- where the SBOM is a
+// build artefact rather than a release asset -- a successful job in the
+// release tag's pipeline that wrote a CycloneDX report or is an SBOM job by
+// name (sbom:publish, say).
 //
 // Evidences DEV.4.3 (the components documented in an SBOM before the release)
 // for the releases looked at, and part of ASST.2.3.2 (the SBOM documented):
@@ -14,7 +17,8 @@ const SBOM = /sbom|cyclonedx|spdx/i;
 export default {
   name: "sbom-present",
   title: "SBOM with every release",
-  description: "The latest release of every project has a release asset that is an SBOM (CycloneDX or SPDX). Projects without a release are left out.",
+  description:
+    "The latest release of every project has an SBOM (CycloneDX or SPDX): as a release asset, or as the artefact of a successful job in the pipeline of its tag. Projects without a release are left out.",
   method: "EXAMINE",
   requirements: ["DEV.4.3", "ASST.2.3.2"],
   partial: ["ASST.2.3.2"],
@@ -30,12 +34,25 @@ export default {
         continue;
       }
       const links = rel.assets?.links ?? [];
-      const sbom = links.find((l) => SBOM.test(l.name ?? "") || SBOM.test(l.url ?? ""));
+      const asset = links.find((l) => SBOM.test(l.name ?? "") || SBOM.test(l.url ?? ""));
+      let job = null;
+      let pipeline = null;
+      if (!asset) {
+        [pipeline] = await gitlab.get(`/projects/${enc(path)}/pipelines?ref=${enc(rel.tag_name)}&per_page=1`);
+        if (pipeline) {
+          const jobs = await gitlab.all(`/projects/${enc(path)}/pipelines/${pipeline.id}/jobs?include_retried=false`);
+          job = jobs.find((j) => j.status === "success" && (j.artifacts ?? []).some((a) => a.file_type === "cyclonedx" || (SBOM.test(j.name) && a.file_type === "archive")));
+        }
+      }
       out.push({
         title: `${path} ${rel.tag_name}`,
         href: rel._links?.self,
-        satisfied: Boolean(sbom),
-        detail: sbom ? `SBOM: ${sbom.name}` : `no SBOM among ${links.length} asset(s)`,
+        satisfied: Boolean(asset || job),
+        detail: asset
+          ? `SBOM: release asset ${asset.name}`
+          : job
+            ? `SBOM: job ${job.name} of pipeline ${pipeline.id}`
+            : `no SBOM among ${links.length} release asset(s), ${pipeline ? `nor in pipeline ${pipeline.id} of the tag` : "no pipeline for the tag"}`,
       });
     }
     if (without.length) note(`no release, left out: ${without.join(", ")}`);

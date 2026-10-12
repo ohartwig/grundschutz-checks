@@ -36,12 +36,16 @@ export default {
         const push = (pb.push_access_levels ?? []).filter((a) => a.access_level !== 0 && a.access_level < MAINTAINER && !a.deploy_key_id);
         if (push.length) problems.push(`push allowed for ${push.map((a) => a.access_level_description).join(", ")}`);
       }
-      if (!p.only_allow_merge_if_pipeline_succeeds) problems.push("merges do not need a successful pipeline");
+      // Without CI there is no pipeline to wait for; the protection stands alone.
+      const ci = p.builds_access_level !== "disabled";
+      if (ci && !p.only_allow_merge_if_pipeline_succeeds) problems.push("merges do not need a successful pipeline");
       out.push({
         title: path,
         href,
         satisfied: !problems.length,
-        detail: problems.length ? problems.join("; ") : `${p.default_branch} protected, no force push, merge after a green pipeline`,
+        detail: problems.length
+          ? problems.join("; ")
+          : `${p.default_branch} protected, no force push, ${ci ? "merge after a green pipeline" : "no CI (no pipeline to wait for)"}`,
       });
     }
     return out;
