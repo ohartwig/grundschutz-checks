@@ -44,6 +44,15 @@ const api = {
     { iid: 8, author: { username: "someone" }, created_at: "2026-01-01T00:00:00Z" },
   ],
   [`/projects/${p("acme/open")}/merge_requests?state=opened`]: [],
+  // SBOM as a build artefact of the tag pipeline; one release with none; a project without CI.
+  [`/projects/${p("acme/loose")}/pipelines?ref=v0.3.0`]: [{ id: 30 }],
+  [`/projects/${p("acme/loose")}/pipelines/30/jobs?include_retried=false`]: [{ name: "sbom:publish", status: "success", artifacts: [{ file_type: "archive" }] }],
+  [`/projects/${p("acme/bare")}`]: { web_url: `${GL}/acme/bare`, default_branch: "main", only_allow_merge_if_pipeline_succeeds: true },
+  [`/projects/${p("acme/bare")}/releases?order_by=released_at&sort=desc`]: [{ tag_name: "v2.0.0", _links: { self: `${GL}/acme/bare/-/releases/v2.0.0` }, assets: { links: [] } }],
+  [`/projects/${p("acme/bare")}/pipelines?ref=v2.0.0`]: [{ id: 40 }],
+  [`/projects/${p("acme/bare")}/pipelines/40/jobs?include_retried=false`]: [{ name: "build", status: "success", artifacts: [{ file_type: "archive" }] }, { name: "sbom:publish", status: "failed", artifacts: [] }],
+  [`/projects/${p("acme/noci")}`]: { web_url: `${GL}/acme/noci`, default_branch: "main", builds_access_level: "disabled", only_allow_merge_if_pipeline_succeeds: false },
+  [`/projects/${p("acme/noci")}/protected_branches/main`]: { allow_force_push: false, push_access_levels: [{ access_level: 40, access_level_description: "Maintainers" }] },
 };
 const fakeFetch = async (url) => {
   const u = new URL(url);
@@ -121,15 +130,28 @@ test("tls-endpoints: current TLS, old TLS refused, certificate valid long enough
   assert.equal(s["down.test:8443"].href, "https://down.test:8443/");
 });
 
-test("sbom-present: an SBOM asset on the latest release; a project without release is named, not judged", async () => {
-  const r = await run("sbom-present");
+test("sbom-present: a release asset or an SBOM job of the tag pipeline; a project without release is named, not judged", async () => {
+  const r = await run("sbom-present", (c) => ({ ...c, gitlab: { ...c.gitlab, projects: ["acme/bare"] } }));
   assert.equal(r.code, 0, r.err);
   const s = by(r);
-  assert.equal(s["acme/good v1.2.0"].satisfied, true);
-  assert.equal(s["acme/loose v0.3.0"].satisfied, false);
-  assert.equal(Object.keys(s).length, 2);
+  assert.match(s["acme/good v1.2.0"].detail, /^SBOM: release asset sbom\.cdx\.json$/);
+  assert.match(s["acme/loose v0.3.0"].detail, /^SBOM: job sbom:publish of pipeline 30$/);
+  assert.equal(s["acme/bare v2.0.0"].satisfied, false);
+  assert.match(s["acme/bare v2.0.0"].detail, /no SBOM among 0 release asset\(s\), nor in pipeline 40/);
+  assert.equal(Object.keys(s).length, 3);
   assert.deepEqual(r.run.evidence.at(-1), { text: "no release, left out: acme/open" });
   assert.deepEqual(r.run.partial, ["ASST.2.3.2"]);
+});
+
+test("without CI: no pipeline gate to ask for, nothing to scan", async () => {
+  const bp = await run("branch-protection", (c) => ({ ...c, gitlab: { url: GL, projects: ["acme/noci"] } }));
+  assert.equal(bp.code, 0, bp.err);
+  assert.equal(bp.run.subjects[0].satisfied, true);
+  assert.match(bp.run.subjects[0].detail, /no CI/);
+  const du = await run("dependency-updates", (c) => ({ ...c, gitlab: { url: GL, projects: ["acme/noci", "acme/good"] } }));
+  assert.equal(du.code, 0, du.err);
+  assert.deepEqual(du.run.subjects.map((s) => s.title), ["acme/good"]);
+  assert.deepEqual(du.run.evidence.at(-1), { text: "CI disabled, left out: acme/noci" });
 });
 
 test("dependency-updates: a passed scan job, no update of the bot waiting too long", async () => {

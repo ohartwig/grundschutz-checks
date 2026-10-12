@@ -21,14 +21,20 @@ export default {
   partial: ["DET.5.3", "DET.5.10"],
   subjects: (config) => `Every non-archived project of ${describe(config.gitlab)}.`,
   needs: ["gitlab"],
-  async run({ config, gitlab, now }) {
+  async run({ config, gitlab, now, note }) {
     const c = config["dependency-updates"] ?? {};
     const scan = new RegExp(c["scan-job"] ?? "dependency|trivy|grype|osv|audit|scan", "i");
     const bots = new Set(c.bots ?? ["pinup-bot", "renovate-bot"]);
     const maxDays = c["max-days-open"] ?? 14;
     const out = [];
+    const noCi = [];
     for (const path of await projects(gitlab, config.gitlab)) {
       const p = await gitlab.get(`/projects/${enc(path)}`);
+      // No CI, no pipeline to scan in: named in the evidence, not judged.
+      if (p.builds_access_level === "disabled") {
+        noCi.push(path);
+        continue;
+      }
       const problems = [];
       const [pl] = await gitlab.get(`/projects/${enc(path)}/pipelines?ref=${enc(p.default_branch ?? "main")}&per_page=1`);
       if (!pl) problems.push("no pipeline on the default branch");
@@ -48,6 +54,7 @@ export default {
         detail: problems.length ? problems.join("; ") : "scan passed on the default branch, no update waiting too long",
       });
     }
+    if (noCi.length) note(`CI disabled, left out: ${noCi.join(", ")}`);
     return out;
   },
 };
