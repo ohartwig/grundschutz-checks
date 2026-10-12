@@ -1,3 +1,13 @@
+## [0.2.0](https://github.com/ohartwig/grundschutz-checks/compare/v0.1.2...v0.2.0) (2026-10-12)
+
+### :sparkles: Features
+
+* deliberate exceptions, named in every run; SBOM jobs by config
+
+### :repeat: Continuous Integrations
+
+* a dependency scan and an SBOM
+
 ## [0.1.2](https://github.com/ohartwig/grundschutz-checks/compare/v0.1.1...v0.1.2) (2026-10-12)
 
 ### :bug: Fixes
