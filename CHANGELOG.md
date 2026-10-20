@@ -1,3 +1,72 @@
+## [0.2.6](https://github.com/ohartwig/grundschutz-checks/compare/v0.2.5...v0.2.6) (2026-10-20)
+
+### :repeat: Continuous Integrations
+
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.4.10
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.4.9
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.4.8
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.4.7
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.4.6
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.4.5
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.4.4
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.4.3
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.4.2
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.4.1
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.4.0
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.3.1
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.3.0
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.2.2
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.2.1
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.2.0
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.1.112
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.1.111
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.1.110
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.1.109
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.1.108
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.1.107
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.1.106
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.1.105
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.1.104
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.1.103
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.1.102
+* **deps:** update dependency devops/ci-cd-components/extension-clean-export to v1.7.1
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.1.101
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.1.100
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.1.99
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.1.98
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.1.97
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.1.96
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.1.95
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.1.94
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.1.93
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.1.92
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.1.91
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.1.90
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.1.89
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.1.88
+* **deps:** update dependency devops/ci-cd-components/extension-clean-export to v1.7.0
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.1.87
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.1.85
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.1.84
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.1.83
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.1.82
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.1.81
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.1.80
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.1.79
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.1.78
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.1.77
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.1.76
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.1.75
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.1.74
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.1.73
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.1.72
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.1.71
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.1.70
+
+### :repeat: Chores
+
+* **deps:** update ohartwig/grundschutz-worksheets digest to ceb6376
+
 ## [0.2.5](https://github.com/ohartwig/grundschutz-checks/compare/v0.2.4...v0.2.5) (2026-10-13)
 
 ### :repeat: Continuous Integrations
