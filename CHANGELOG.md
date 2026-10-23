@@ -1,3 +1,13 @@
+## [0.2.15](https://github.com/ohartwig/grundschutz-checks/compare/v0.2.14...v0.2.15) (2026-10-23)
+
+### :repeat: Continuous Integrations
+
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.4.57
+
+### :repeat: Chores
+
+* **deps:** update dependency registry.ole-hartwig.eu/devops/images/franken-php/ci to v3.1.179
+
 ## [0.2.14](https://github.com/ohartwig/grundschutz-checks/compare/v0.2.13...v0.2.14) (2026-10-23)
 
 ### :repeat: Continuous Integrations
