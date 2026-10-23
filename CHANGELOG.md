@@ -1,3 +1,13 @@
+## [0.2.21](https://github.com/ohartwig/grundschutz-checks/compare/v0.2.20...v0.2.21) (2026-10-23)
+
+### :repeat: Continuous Integrations
+
+* follow components on the rolling major tag
+
+### :repeat: Chores
+
+* **deps:** update dependency registry.ole-hartwig.eu/devops/images/franken-php/ci to v3.1.184
+
 ## [0.2.20](https://github.com/ohartwig/grundschutz-checks/compare/v0.2.19...v0.2.20) (2026-10-23)
 
 ### :repeat: Continuous Integrations
