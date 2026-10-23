@@ -1,3 +1,10 @@
+## [0.2.22](https://github.com/ohartwig/grundschutz-checks/compare/v0.2.21...v0.2.22) (2026-10-23)
+
+### :repeat: Chores
+
+* **deps:** update ohartwig/grundschutz-worksheets digest to cc34868
+* **deps:** update ohartwig/grundschutz-worksheets digest to 8c8915d
+
 ## [0.2.21](https://github.com/ohartwig/grundschutz-checks/compare/v0.2.20...v0.2.21) (2026-10-23)
 
 ### :repeat: Continuous Integrations
