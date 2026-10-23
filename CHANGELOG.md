@@ -1,3 +1,13 @@
+## [0.2.12](https://github.com/ohartwig/grundschutz-checks/compare/v0.2.11...v0.2.12) (2026-10-23)
+
+### :repeat: Continuous Integrations
+
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.4.53
+
+### :repeat: Chores
+
+* **deps:** update ohartwig/grundschutz-worksheets digest to 9f0a623
+
 ## [0.2.11](https://github.com/ohartwig/grundschutz-checks/compare/v0.2.10...v0.2.11) (2026-10-22)
 
 ### :repeat: Continuous Integrations
