@@ -96,7 +96,7 @@ const base = {
   title: "Test checks",
   version: "1",
   "last-modified": "2026-10-12T00:00:00Z",
-  catalog: { path: "control_layer/Grundschutz++/Grundschutz++-resolved_catalog.json", commit: "a12831136f4122a4c43854622180a24f2576a41e" },
+  catalog: { path: "control_layer/Grundschutz++/Grundschutz++-resolved_catalog.json", commit: "160c177db6c84d3c621fff614559943b1de8c600" },
   plan: { href: "assessment-plan.json" },
   gitlab: { url: GL, groups: ["acme"] },
   tls: { endpoints: ["good.test", "old.test", "expiring.test", "blind.test", "down.test:8443"] },
