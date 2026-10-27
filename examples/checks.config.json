@@ -9,6 +9,7 @@
     "commit": "a12831136f4122a4c43854622180a24f2576a41e"
   },
   "plan": { "href": "assessment-plan.json" },
+  "performed_by": "Example GmbH, security officer",
   "checks": ["branch-protection", "mfa-enforced", "tls-endpoints", "sbom-present", "dependency-updates"],
   "every": { "default": { "period": 1, "unit": "days" } },
   "gitlab": {

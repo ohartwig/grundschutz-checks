@@ -53,6 +53,10 @@ from the config. `GITLAB_TOKEN` needs `read_api` and nothing more.
   requirement IDs are checked against (by results.mjs).
 - `plan`, `ssp`: the assessment plan the runs follow (`file` adds its
   SHA-256) and the security plan it verifies.
+- `performed_by`: who ran the checks or answers for them, a person or the
+  account a schedule runs as (BSI-Standard 300-1, 4.3); written to every run
+  file. Without it a CI run uses `GITLAB_USER_LOGIN`, outside CI the field is
+  left out.
 - `checks`: which checks run; `every`: how often, for the plan.
 - `gitlab`: the instance, and the groups and projects to look at.
 - `tls`, `mfa-enforced`, `dependency-updates`: the limits of those checks.
