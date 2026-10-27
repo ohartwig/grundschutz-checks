@@ -1,3 +1,9 @@
+## [0.3.0](https://github.com/ohartwig/grundschutz-checks/compare/v0.2.43...v0.3.0) (2026-10-27)
+
+### :sparkles: Features
+
+* name who ran the checks (performed_by, BSI-Standard 300-1 4.3)
+
 ## [0.2.43](https://github.com/ohartwig/grundschutz-checks/compare/v0.2.42...v0.2.43) (2026-10-27)
 
 ### :repeat: Chores
