@@ -10,7 +10,8 @@
 // enables: the same names, titles, methods and requirements the runs carry,
 // so plan and results join by check name.
 //
-// The config names what to look at and where the plan is (see
+// The config names what to look at, where the plan is and, optionally, who
+// answers for the runs (performed_by) (see
 // examples/checks.config.json). Tokens come from the environment, never from
 // the config: GITLAB_TOKEN, read-only (read_api) is enough.
 //
@@ -90,6 +91,9 @@ export const main = async (argv, { env = process.env, fetch = globalThis.fetch, 
   if (!subjects.length) return { code: 1, err: `${check.name}: nothing to look at -- check the config` };
   const end = clock();
   const ci = Boolean(env.CI_JOB_URL);
+  // Who ran the checks or answers for the run (BSI-Standard 300-1, 4.3): the
+  // config's name, else the user a CI job runs as. Never an empty string.
+  const performedBy = [config.performed_by, env.GITLAB_USER_LOGIN].find((v) => typeof v === "string" && v.trim())?.trim();
   const run = {
     check: check.name,
     title: check.title,
@@ -98,6 +102,7 @@ export const main = async (argv, { env = process.env, fetch = globalThis.fetch, 
     start: start.toISOString(),
     end: (end > start ? end : start).toISOString(),
     catalog: config.catalog,
+    ...(performedBy && { performed_by: performedBy }),
     requirements: check.requirements,
     ...(check.partial?.length && { partial: check.partial }),
     evidence: [...(ci ? [{ text: "the job that measured", href: env.CI_JOB_URL }] : []), ...notes.map((text) => ({ text }))],

@@ -211,6 +211,14 @@ test("the run file carries what results.mjs needs: plan, catalog, who measured, 
   assert.deepEqual(JSON.parse(local.out).measured_by, { repository: "local", commit: "local" });
 });
 
+test("performed_by: the config, else the CI user, else left out; never empty", async () => {
+  const ci = { ...env, GITLAB_USER_LOGIN: "scheduler" };
+  assert.equal((await run("branch-protection", undefined, { env: ci })).run.performed_by, "scheduler");
+  assert.equal((await run("branch-protection", (c) => ({ ...c, performed_by: "Ada Example" }), { env: ci })).run.performed_by, "Ada Example");
+  assert.equal("performed_by" in (await run("branch-protection")).run, false);
+  assert.equal("performed_by" in (await run("branch-protection", (c) => ({ ...c, performed_by: "  " }), { env: { ...env, GITLAB_USER_LOGIN: "" } })).run, false);
+});
+
 test("a check that could not look writes nothing", async () => {
   const failing = async () => new Response("{}", { status: 500 });
   const r = await run("branch-protection", undefined, { fetch: failing });
