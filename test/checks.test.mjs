@@ -42,7 +42,12 @@ const api = {
   [`/projects/${p("acme/good")}/pipelines?ref=main&scope=finished`]: [{ id: 11 }],
   [`/projects/${p("acme/loose")}/pipelines?ref=main&scope=finished`]: [{ id: 12 }],
   [`/projects/${p("acme/open")}/pipelines?ref=trunk&scope=finished`]: [],
-  [`/projects/${p("acme/good")}/pipelines/11/jobs?include_retried=false`]: [{ name: "test", status: "success" }, { name: "trivy-scan", status: "success" }, { name: "container_scanning:write-baseline", status: "manual" }],
+  [`/projects/${p("acme/good")}/pipelines/11/jobs?include_retried=false`]: [{ name: "test", status: "success" }, { name: "trivy-scan", status: "success" }, { name: "container_scanning:write-baseline", status: "manual" }, { name: "trivy-scan:write-baseline", status: "canceled" }],
+  [`/projects/${p("acme/stopped")}`]: { web_url: `${GL}/acme/stopped`, default_branch: "main" },
+  [`/projects/${p("acme/stopped")}/repository/files/.gitlab-ci.yml?ref=main`]: { file_name: ".gitlab-ci.yml" },
+  [`/projects/${p("acme/stopped")}/pipelines?ref=main&scope=finished`]: [{ id: 13 }],
+  [`/projects/${p("acme/stopped")}/pipelines/13/jobs?include_retried=false`]: [{ name: "container_scanning", status: "canceled" }, { name: "container_scanning:write-baseline", status: "success" }],
+  [`/projects/${p("acme/stopped")}/merge_requests?state=opened`]: [],
   [`/projects/${p("acme/loose")}/pipelines/12/jobs?include_retried=false`]: [{ name: "test", status: "success" }],
   [`/projects/${p("acme/good")}/merge_requests?state=opened`]: [{ iid: 3, author: { username: "pinup-bot" }, created_at: "2026-10-10T00:00:00Z" }],
   [`/projects/${p("acme/loose")}/merge_requests?state=opened`]: [
@@ -197,6 +202,16 @@ test("dependency-updates: a passed scan job, no update of the bot waiting too lo
   assert.equal(s["acme/good"].satisfied, true);
   assert.match(s["acme/loose"].detail, /ran no scan job; 1 update\(s\) open more than 14 days: !7$/);
   assert.match(s["acme/open"].detail, /no finished pipeline on the default branch/);
+});
+
+test("dependency-updates: a canceled helper of a passed scan is no finding, a canceled scan is", async () => {
+  // acme/good: trivy-scan passed, trivy-scan:write-baseline canceled.
+  const r = await run("dependency-updates", (c) => ({ ...c, gitlab: { url: GL, projects: ["acme/good", "acme/stopped"] } }));
+  assert.equal(r.code, 0, r.err);
+  const s = by(r);
+  assert.equal(s["acme/good"].satisfied, true);
+  assert.equal(s["acme/stopped"].satisfied, false);
+  assert.equal(s["acme/stopped"].detail, "scan container_scanning canceled in pipeline 13");
 });
 
 test("the run file carries what results.mjs needs: plan, catalog, who measured, when", async () => {
