@@ -1,3 +1,9 @@
+## [0.3.150](https://github.com/ohartwig/grundschutz-checks/compare/v0.3.149...v0.3.150) (2026-11-07)
+
+### :bug: Fixes
+
+* **dependency-updates:** a canceled helper of a passed scan is not a failed scan
+
 ## [0.3.149](https://github.com/ohartwig/grundschutz-checks/compare/v0.3.148...v0.3.149) (2026-11-07)
 
 ### :repeat: Chores
