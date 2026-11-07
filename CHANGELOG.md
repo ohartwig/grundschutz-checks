@@ -1,3 +1,9 @@
+## [0.3.157](https://github.com/ohartwig/grundschutz-checks/compare/v0.3.156...v0.3.157) (2026-11-07)
+
+### :repeat: Chores
+
+* **deps:** update ohartwig/grundschutz-worksheets digest to edaa613
+
 ## [0.3.156](https://github.com/ohartwig/grundschutz-checks/compare/v0.3.155...v0.3.156) (2026-11-07)
 
 ### :repeat: Chores
