@@ -3,6 +3,12 @@
 // passed it (a manual or skipped helper job is not a scan that ran), and no
 // merge request of the update bot has been open longer than allowed.
 //
+// A canceled helper job "<scan>:<step>" next to a passed job "<scan>" is not
+// a failed scan: the scan ran and passed, only its helper was stopped. The
+// first trial against the estate reported container_scanning:write-baseline
+// canceled while container_scanning had passed (2026-10-18). A canceled job
+// without a passed parent still counts: then nothing scanned.
+//
 // Evidences part of DET.5.3 (vulnerability scans with evaluation and
 // treatment) and part of DET.5.10 (timely patch management): for the code and
 // images of the projects, not for the systems they run on.
@@ -49,7 +55,9 @@ export default {
       else {
         const jobs = await gitlab.all(`/projects/${enc(path)}/pipelines/${pl.id}/jobs?include_retried=false`);
         const scans = jobs.filter((j) => scan.test(j.name) && !["manual", "skipped", "created"].includes(j.status));
-        const bad = scans.filter((j) => j.status !== "success");
+        const passed = new Set(scans.filter((j) => j.status === "success").map((j) => j.name));
+        const helperOfPassed = (j) => j.status === "canceled" && j.name.includes(":") && passed.has(j.name.slice(0, j.name.lastIndexOf(":")));
+        const bad = scans.filter((j) => j.status !== "success" && !helperOfPassed(j));
         if (!scans.length) problems.push(`pipeline ${pl.id} ran no scan job`);
         else if (bad.length) problems.push(`scan ${bad.map((j) => `${j.name} ${j.status}`).join(", ")} in pipeline ${pl.id}`);
       }
