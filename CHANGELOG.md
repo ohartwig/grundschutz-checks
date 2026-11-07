@@ -1,3 +1,13 @@
+## [0.3.152](https://github.com/ohartwig/grundschutz-checks/compare/v0.3.151...v0.3.152) (2026-11-07)
+
+### :repeat: Continuous Integrations
+
+* **mirror:** rewrite two project names in commit messages
+
+### :repeat: Chores
+
+* **deps:** update dependency registry.ole-hartwig.eu/devops/images/franken-php/ci to v3.2.151
+
 ## [0.3.151](https://github.com/ohartwig/grundschutz-checks/compare/v0.3.150...v0.3.151) (2026-11-07)
 
 ### :repeat: Chores
