@@ -1,3 +1,9 @@
+## [0.3.205](https://github.com/ohartwig/grundschutz-checks/compare/v0.3.204...v0.3.205) (2026-11-12)
+
+### :repeat: Chores
+
+* **deps:** update ohartwig/grundschutz-worksheets digest to cafc654
+
 ## [0.3.204](https://github.com/ohartwig/grundschutz-checks/compare/v0.3.203...v0.3.204) (2026-11-12)
 
 ### :repeat: Chores
