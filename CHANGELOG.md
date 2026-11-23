@@ -1,3 +1,9 @@
+## [0.3.273](https://github.com/ohartwig/grundschutz-checks/compare/v0.3.272...v0.3.273) (2026-11-23)
+
+### :bug: Fixes
+
+* **sbom-present:** the SBOM requirement is ASST.2.4 now
+
 ## [0.3.272](https://github.com/ohartwig/grundschutz-checks/compare/v0.3.271...v0.3.272) (2026-11-23)
 
 ### :repeat: Chores
