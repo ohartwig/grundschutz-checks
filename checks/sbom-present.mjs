@@ -7,7 +7,7 @@
 // SBOM is then built by the pipeline on that commit.
 //
 // Evidences DEV.4.3 (the components documented in an SBOM before the release)
-// for the releases looked at, and part of ASST.2.3.2 (the SBOM documented):
+// for the releases looked at, and part of ASST.2.4 (the SBOM documented):
 // that it exists, not that it is complete. A project without any release has
 // nothing to check and is left out, by name, in the evidence.
 
@@ -27,8 +27,8 @@ export default {
   description:
     "The latest release of every project has an SBOM (CycloneDX or SPDX): as a release asset, or as the artefact of a successful job in a pipeline of its tag or of the commit the tag points to. Projects without a release are left out.",
   method: "EXAMINE",
-  requirements: ["DEV.4.3", "ASST.2.3.2"],
-  partial: ["ASST.2.3.2"],
+  requirements: ["DEV.4.3", "ASST.2.4"],
+  partial: ["ASST.2.4"],
   subjects: (config) => `The latest release of every non-archived project of ${describe(config.gitlab)}.`,
   needs: ["gitlab"],
   async run({ config, gitlab, note }) {

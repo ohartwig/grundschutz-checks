@@ -18,7 +18,7 @@ not look has not found anything to be as required.
 | `branch-protection` | the default branch of every project: protected, no force push, pushes by maintainers only, merges only with a green pipeline | DEV.2.4, TEST.4.1 | both: the default branch, not every branch; the gate, not the criteria behind it |
 | `mfa-enforced` | every group named requires two-factor authentication, grace period at most 48 h | BER.5.9 | whether the factor resists phishing, and rights outside the group, are not seen |
 | `tls-endpoints` | every endpoint named negotiates TLS 1.2 or 1.3, refuses 1.0 and 1.1, has a certificate valid for its name for at least 14 more days | KONF.14.1, KONF.14.1.1 | the endpoints named, not every connection |
-| `sbom-present` | the latest release of every project has an SBOM asset (CycloneDX, SPDX) | DEV.4.3, ASST.2.3.2 | ASST.2.3.2: that it exists, not that it is complete |
+| `sbom-present` | the latest release of every project has an SBOM asset (CycloneDX, SPDX) | DEV.4.3, ASST.2.4 | ASST.2.4: that it exists, not that it is complete |
 | `dependency-updates` | the latest default-branch pipeline ran and passed a scan job; no update of the bot open longer than 14 days | DET.5.3, DET.5.10 | both: the code and images, not the systems they run on |
 
 "In part" is not modesty but data: those requirements are listed in the run

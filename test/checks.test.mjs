@@ -163,7 +163,7 @@ test("sbom-present: a release asset or an SBOM job of the tag pipeline; a projec
   assert.equal(s["acme/tagged v3.1.0"].detail, "SBOM: job sbom:publish of pipeline 50");
   assert.equal(Object.keys(s).length, 4);
   assert.deepEqual(r.run.evidence.at(-1), { text: "no release, left out: acme/open" });
-  assert.deepEqual(r.run.partial, ["ASST.2.3.2"]);
+  assert.deepEqual(r.run.partial, ["ASST.2.4"]);
 });
 
 test("without CI: the finding is the missing CI, not the pipeline setting", async () => {
